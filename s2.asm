@@ -5572,8 +5572,8 @@ LevelEnd_SetSignpost:
 CheckLoadSignpostArt:
 	tst.w	(Level_Has_Signpost).w
 	beq.s	+	; rts
-	tst.w	(Debug_placement_mode).w
-	bne.s	+	; rts
+	;tst.w	(Debug_placement_mode).w
+	;bne.s	+	; rts
 	move.w	(Camera_X_pos).w,d0
 	move.w	(Camera_Max_X_pos).w,d1
 	subi.w	#$100,d1
@@ -5583,7 +5583,7 @@ CheckLoadSignpostArt:
 	beq.s	SignpostUpdateTailsBounds
 	cmp.w	(Camera_Min_X_pos).w,d1
 	beq.s	SignpostUpdateTailsBounds
-	move.w	d1,(Camera_Min_X_pos).w ; prevent camera from scrolling back to the left
+	;move.w	d1,(Camera_Min_X_pos).w ; prevent camera from scrolling back to the left
 	tst.w	(Two_player_mode).w
 	bne.s	+	; rts
 	moveq	#PLCID_Signpost,d0 ; <== PLC_1F
@@ -31902,7 +31902,7 @@ Obj0D_Main:
 	clr.b	(Update_HUD_timer).w
 	move.w	#1,anim(a0)
 	move.w	#0,obj0D_spinframe(a0)
-	move.w	(Camera_Max_X_pos).w,(Camera_Min_X_pos).w	; lock screen
+	;move.w	(Camera_Max_X_pos).w,(Camera_Min_X_pos).w	; lock screen
 	move.b	#2,routine_secondary(a0) ; => Obj0D_Main_State2
 	cmpi.b	#$C,(Loser_Time_Left).w
 	bhi.s	loc_192A0
@@ -32045,7 +32045,7 @@ loc_19434:
 	beq.s	loc_1944C
 	move.w	(MainCharacter+x_pos).w,d0
 	move.w	(Camera_Max_X_pos).w,d1
-	addi.w	#$128,d1
+	addi.w	#$FFFF,d1
 	cmp.w	d1,d0
 	blo.w	return_194D0
 
