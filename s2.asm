@@ -33585,6 +33585,7 @@ Obj01_MdJump:
 
 ; loc_1A35A:
 Sonic_Move:
+	clr.b	(Scroll_lock).w
 	move.w	(Sonic_top_speed).w,d6
 	move.w	(Sonic_acceleration).w,d5
 	move.w	(Sonic_deceleration).w,d4
