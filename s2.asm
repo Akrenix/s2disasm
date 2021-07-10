@@ -168,10 +168,9 @@ EndOfHeader:
 ; Crash/Freeze the 68000. Note that the Z80 continues to run, so the music keeps playing.
 ; loc_200:
 ErrorTrap:
-	nop	; delay
-	nop	; delay
-	bra.s	ErrorTrap	; Loop indefinitely.
-
+	nop
+	nop
+	nop
 ; ===========================================================================
 ; loc_206:
 EntryPoint:
@@ -4463,7 +4462,7 @@ Level_TtlCard:
 	move.w	#0,(Ctrl_2_Logical).w
 	move.w	#0,(Ctrl_1).w
 	move.w	#0,(Ctrl_2).w
-	move.b	#1,(Control_Locked).w
+	clr.b	(Control_Locked).w
 	move.b	#1,(Control_Locked_P2).w
 	move.b	#0,(Level_started_flag).w
 ; Level_ChkWater:
@@ -5574,8 +5573,8 @@ CheckLoadSignpostArt:
 	beq.s	+	; rts
 	;tst.w	(Debug_placement_mode).w
 	;bne.s	+	; rts
-	move.w	(Camera_X_pos).w,d0
-	move.w	(Camera_Max_X_pos).w,d1
+	;move.w	(Camera_X_pos).w,d0
+	;move.w	(Camera_Max_X_pos).w,d1
 	subi.w	#$100,d1
 	cmp.w	d1,d0
 	blt.s	SignpostUpdateTailsBounds
@@ -12777,7 +12776,7 @@ off_A29C:
 ; ===========================================================================
 +
 	move.w	#2,(Ending_VInt_Subrout).w
-	st	(Control_Locked).w
+	clr.b	(Control_Locked).w ;st	(Control_Locked).w
 	st	(Ending_PalCycle_flag).w
 	lea	(MainCharacter).w,a1 ; a1=character
 	move.w	(Ending_Routine).w,d0
@@ -16581,7 +16580,7 @@ ScrollHoriz:
 	move.w	(a6,d0.w),d0	; get Sonic's position a certain number of frames ago
 	andi.w	#$3FFF,d0
 	bra.s	.checkIfShouldScroll	; use that value for scrolling
-	move.w	#0,(Camera_Min_X_pos).w
+	move.w	#-$FFF,(Camera_Min_X_pos).w
 	move.w	#$FFFF,(Camera_Max_X_pos).w
 ; ===========================================================================
 ; loc_D72E:
@@ -18824,7 +18823,7 @@ LevEvents_WFZ_Routine6:
 	cmpi.w	#$500,(Camera_Y_pos).w
 	blo.s	+	; rts
 	addq.w	#2,(WFZ_LevEvent_Subrout).w ; => LevEvents_WFZ_RoutineNull
-	st	(Control_Locked).w
+	clr.b	(Control_Locked).w ;st	(Control_Locked).w
 	moveq	#PLCID_Tornado,d0
 	jsrto	(LoadPLC).l, JmpTo2_LoadPLC
 +
@@ -23691,7 +23690,7 @@ Obj26_SpawnSmoke:
 	lea	(Object_Respawn_Table).w,a2
 	moveq	#0,d0
 	move.b	respawn_index(a0),d0
-	bset	#0,2(a2,d0.w)	; mark monitor as destroyed
+	bset	#0,1(a2,d0.w)	; mark monitor as destroyed
 	move.b	#$A,anim(a0)
 	bra.w	DisplaySprite
 ; ===========================================================================
@@ -24152,6 +24151,34 @@ teleport_swap_table_end:
 ; doesn't actually do anything other than increase the player's monitor score
 ; ---------------------------------------------------------------------------
 qmark_monitor:
+	add.b #$20,(Ring_count)
+    if gameRevision=2
+	; fixes a bug where the player can get stuck if transforming at the end of a level
+	tst.b	(Update_HUD_timer).w	; has Sonic reached the end of the act?
+	beq.s	ret_1ABA4		; if yes, branch
+    endif
+
+	move.b	#1,(Super_Sonic_palette).w
+	move.b	#$F,(Palette_timer).w
+	move.b	#1,(Super_Sonic_flag).w
+	move.b	#$81,obj_control(a0)
+	move.b	#AniIDSupSonAni_Transform,anim(a0)			; use transformation animation
+	move.b	#ObjID_SuperSonicStars,(SuperSonicStars+id).w ; load Obj7E (super sonic stars object) at $FFFFD040
+	move.w	#$A00,(Sonic_top_speed).w
+	move.w	#$30,(Sonic_acceleration).w
+	move.w	#$100,(Sonic_deceleration).w
+	move.w	#0,invincibility_time(a0)
+	bset	#status_sec_isInvincible,status_secondary(a0)	; make Sonic invincible
+	move.w	#SndID_SuperTransform,d0
+	jsr	(PlaySound).l	; Play transformation sound effect.
+	move.w	#MusID_SuperSonic,d0
+	jmp	(PlayMusic).l	; load the Super Sonic song and return
+
+; ---------------------------------------------------------------------------
+ret_1ABA4:
+	rts
+;----------------------------------------------------------------------------
+old_qmark:
 	addq.w	#1,(a2)
 	rts
 ; ===========================================================================
@@ -32037,7 +32064,7 @@ Obj0D_Main_State3:
 	bne.w	return_194D0
 	btst	#1,(MainCharacter+status).w
 	bne.s	loc_19434
-	move.b	#1,(Control_Locked).w
+	clr.b	(Control_Locked).w
 	move.w	#(button_right_mask<<8)|0,(Ctrl_1_Logical).w
 loc_19434:
 	; This check here is for S1's Big Ring, which would set Sonic's Object ID to 0
@@ -75376,7 +75403,7 @@ ObjB2_Main_SCZ:
 	blo.s	loc_3A878
 	cmpi.w	#$1568,d1
 	bhs.s	ObjB2_SCZ_Finished
-	st	(Control_Locked).w
+	clr.b	(Control_Locked).w ;st	(Control_Locked).w
 	move.w	#(button_right_mask<<8)|button_right_mask,(Ctrl_1_Logical).w
 	bra.w	loc_3A87C
 ; ===========================================================================
@@ -79537,7 +79564,7 @@ loc_3D922:
 ; ---------------------------------------------------------------------------
 +
 	addq.b	#2,anim(a0)
-	st	(Control_Locked).w
+	clr.b	(Control_Locked).w ;st	(Control_Locked).w
 	move.w	#$1000,(Camera_Max_X_pos).w
 	rts
 ; ===========================================================================
@@ -85290,7 +85317,16 @@ DbgObjList_Def_End
 
 DbgObjList_EHZ: dbglistheader
 	dbglistobj ObjID_Ring,		Obj25_MapUnc_12382,   0,   0, make_art_tile(ArtTile_ArtNem_Ring,1,0)
+	dbglistobj ObjID_Monitor,	Obj26_MapUnc_12D36,   0,   0, make_art_tile(ArtTile_ArtNem_Powerups,0,0)
+	dbglistobj ObjID_Monitor,	Obj26_MapUnc_12D36,   1,   0, make_art_tile(ArtTile_ArtNem_Powerups,0,0)
+	dbglistobj ObjID_Monitor,	Obj26_MapUnc_12D36,   2,   0, make_art_tile(ArtTile_ArtNem_Powerups,0,0)
+	dbglistobj ObjID_Monitor,	Obj26_MapUnc_12D36,   3,   0, make_art_tile(ArtTile_ArtNem_Powerups,0,0)
+	dbglistobj ObjID_Monitor,	Obj26_MapUnc_12D36,   4,   0, make_art_tile(ArtTile_ArtNem_Powerups,0,0)
+	dbglistobj ObjID_Monitor,	Obj26_MapUnc_12D36,   5,   0, make_art_tile(ArtTile_ArtNem_Powerups,0,0)	
+	dbglistobj ObjID_Monitor,	Obj26_MapUnc_12D36,   6,   0, make_art_tile(ArtTile_ArtNem_Powerups,0,0)
+	dbglistobj ObjID_Monitor,	Obj26_MapUnc_12D36,   7,   0, make_art_tile(ArtTile_ArtNem_Powerups,0,0)							
 	dbglistobj ObjID_Monitor,	Obj26_MapUnc_12D36,   8,   0, make_art_tile(ArtTile_ArtNem_Powerups,0,0)
+	dbglistobj ObjID_Monitor,	Obj26_MapUnc_12D36,   9,   0, make_art_tile(ArtTile_ArtNem_Powerups,0,0)	
 	dbglistobj ObjID_Starpost,	Obj79_MapUnc_1F424,   1,   0, make_art_tile(ArtTile_ArtNem_Checkpoint,0,0)
 	dbglistobj ObjID_PlaneSwitcher,	Obj03_MapUnc_1FFB8,   9,   1, make_art_tile(ArtTile_ArtNem_Ring,1,0)
 	dbglistobj ObjID_EHZWaterfall,	Obj49_MapUnc_20C50,   0,   0, make_art_tile(ArtTile_ArtNem_Waterfall,1,0)
