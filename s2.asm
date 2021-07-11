@@ -33458,7 +33458,7 @@ Obj01_InWater:
 	move.b	#ObjID_SmallBubbles,(Sonic_BreathingBubbles+id).w ; load Obj0A (sonic's breathing bubbles) at $FFFFD080
 	move.b	#$81,(Sonic_BreathingBubbles+subtype).w
 	move.l	a0,(Sonic_BreathingBubbles+objoff_3C).w
-	move.w	#$300,(Sonic_top_speed).w
+	move.w	#$600,(Sonic_top_speed).w
 	move.w	#6,(Sonic_acceleration).w
 	move.w	#$40,(Sonic_deceleration).w
 	tst.b	(Super_Sonic_flag).w
@@ -34550,13 +34550,13 @@ Sonic_RevertToNormal:
 	move.w	#$28,(Palette_frame).w
 	move.b	#0,(Super_Sonic_flag).w
 	move.b	#AniIDSonAni_Run,prev_anim(a0)	; Force Sonic's animation to restart
-	move.w	#1,invincibility_time(a0)	; Remove invincibility
-	move.w	#$600,(Sonic_top_speed).w
+	;move.w	#1,invincibility_time(a0)	; Remove invincibility
+	move.w	#$1200,(Sonic_top_speed).w
 	move.w	#$C,(Sonic_acceleration).w
 	move.w	#$80,(Sonic_deceleration).w
 	btst	#6,status(a0)	; Check if underwater, return if not
 	beq.s	return_1AC3C
-	move.w	#$300,(Sonic_top_speed).w
+	move.w	#$600,(Sonic_top_speed).w
 	move.w	#6,(Sonic_acceleration).w
 	move.w	#$40,(Sonic_deceleration).w
 
