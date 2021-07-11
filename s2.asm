@@ -23902,14 +23902,14 @@ super_shoes:
 	bne.s	super_shoes_Tails	; if not, branch
 	cmpi.w	#2,(Player_mode).w	; is player using Tails?
 	beq.s	super_shoes_Tails	; if yes, branch
-	move.w	#$C00,(Sonic_top_speed).w	; set stats
+	move.w	#$E00,(Sonic_top_speed).w	; set stats
 	move.w	#$18,(Sonic_acceleration).w
 	move.w	#$80,(Sonic_deceleration).w
 	bra.s	+
 ; ---------------------------------------------------------------------------
 ;loc_12A10:
 super_shoes_Tails:
-	move.w	#$C00,(Tails_top_speed).w
+	move.w	#$E00,(Tails_top_speed).w
 	move.w	#$18,(Tails_acceleration).w
 	move.w	#$80,(Tails_deceleration).w
 +
@@ -23945,7 +23945,7 @@ invincible_monitor:
 	tst.b	(Super_Sonic_flag).w	; is Sonic super?
 	bne.s	+++	; rts		; if yes, branch
 	bset	#status_sec_isInvincible,status_secondary(a1)	; give invincibility status
-	move.w	#20*60,invincibility_time(a1) ; 20 seconds
+	move.w	#0,invincibility_time(a1) ; 20 seconds
 	tst.b	(Current_Boss_ID).w	; don't change music during boss battles
 	bne.s	+
 	cmpi.b	#$C,air_left(a1)	; or when drowning
@@ -35864,7 +35864,7 @@ Obj02_Init:
 	move.b	#2,priority(a0)
 	move.b	#$18,width_pixels(a0)
 	move.b	#$84,render_flags(a0) ; render_flags(Tails) = $80 | initial render_flags(Sonic)
-	move.w	#$600,(Tails_top_speed).w	; set Tails' top speed
+	move.w	#$1200,(Tails_top_speed).w	; set Tails' top speed
 	move.w	#$C,(Tails_acceleration).w	; set Tails' acceleration
 	move.w	#$80,(Tails_deceleration).w	; set Tails' deceleration
 	cmpi.w	#2,(Player_mode).w
@@ -36007,7 +36007,7 @@ Obj02_ChkShoes:		; Checks if Speed Shoes have expired and disables them if they 
 	beq.s	Obj02_ExitChk
 	subq.w	#1,speedshoes_time(a0)
 	bne.s	Obj02_ExitChk
-	move.w	#$600,(Tails_top_speed).w
+	move.w	#$1200,(Tails_top_speed).w
 	move.w	#$C,(Tails_acceleration).w
 	move.w	#$80,(Tails_deceleration).w
 ; Obj02_RmvSpeed:
@@ -36530,7 +36530,7 @@ Obj02_OutWater:
 
 	movea.l	a0,a1
 	bsr.w	ResumeMusic
-	move.w	#$600,(Tails_top_speed).w
+	move.w	#$1200,(Tails_top_speed).w
 	move.w	#$C,(Tails_acceleration).w
 	move.w	#$80,(Tails_deceleration).w
 
