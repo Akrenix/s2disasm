@@ -5598,10 +5598,10 @@ SignpostUpdateTailsBounds:
 	cmp.w	d1,d0
 	blt.s	+	; rts
 	tst.b	(Update_HUD_timer_2P).w
-	beq.s	+	; rts
-	cmp.w	(Tails_Min_X_pos).w,d1
-	beq.s	+	; rts
-	move.w	d1,(Tails_Min_X_pos).w ; prevent Tails from going past new left boundary
+	;beq.s	+	; rts
+	;cmp.w	(Tails_Min_X_pos).w,d1
+	;beq.s	+	; rts
+	;move.w	d1,(Tails_Min_X_pos).w ; prevent Tails from going past new left boundary
 +	rts
 ; End of function CheckLoadSignpostArt
 
@@ -14721,6 +14721,10 @@ SwScrl_EHZ:
 	move.w	d3,(a1)+
 	move.w	d4,(a1)+
 	move.w	d3,(a1)+
+	move.w	d4,(a1)+
+	move.w	d3,(a1)+
+	move.w	d4,(a1)+
+	move.w	d3,(a1)+	
 	swap	d3
 	add.l	d0,d3
 	add.l	d0,d3
@@ -16540,8 +16544,8 @@ SetHorizScrollFlags:
 	move.w	(a1),d0		; get camera X pos
 	andi.w	#$10,d0
 	move.b	(a2),d1
-	eor.b	d1,d0		; has the camera crossed a 16-pixel boundary?
-	bne.s	++		; if not, branch
+	;eor.b	d1,d0		; has the camera crossed a 16-pixel boundary?
+	;bne.s	++		; if not, branch
 	eori.b	#$10,(a2)
 	move.w	(a1),d0		; get camera X pos
 	sub.w	d4,d0		; subtract previous camera X pos
@@ -34288,7 +34292,7 @@ Sonic_LevelBound:
 	;addi.w	#320-24,d0		; screen width - Sonic's width_pixels
 	;tst.b	(Current_Boss_ID).w
 	;bne.s	+
-	addi.w	#$40,d0
+	;addi.w	#$40,d0
 ;+
 	;cmp.w	d1,d0			; has Sonic touched the right boundary?
 	;bls.s	Sonic_Boundary_Sides	; if yes, branch
@@ -37126,8 +37130,8 @@ Tails_ChgJumpDir:
 	move.w	d6,d1
 	neg.w	d1
 	cmp.w	d1,d0	; compare new speed with top speed
-	bgt.s	+	; if new speed is less than the maximum, branch
-	move.w	d1,d0	; limit speed in air going left, even if Tails was already going faster (speed limit/cap)
+	;bgt.s	+	; if new speed is less than the maximum, branch
+	;move.w	d1,d0	; limit speed in air going left, even if Tails was already going faster (speed limit/cap)
 +
 	btst	#button_right,(Ctrl_2_Held_Logical).w
 	beq.s	+	; if not holding right, branch
@@ -37135,8 +37139,8 @@ Tails_ChgJumpDir:
 	bclr	#0,status(a0)
 	add.w	d5,d0	; accelerate right in the air
 	cmp.w	d6,d0	; compare new speed with top speed
-	blt.s	+	; if new speed is less than the maximum, branch
-	move.w	d6,d0	; limit speed in air going right, even if Tails was already going faster (speed limit/cap)
+	;blt.s	+	; if new speed is less than the maximum, branch
+	;move.w	d6,d0	; limit speed in air going right, even if Tails was already going faster (speed limit/cap)
 ; Obj02_JumpMove:
 +	move.w	d0,x_vel(a0)
 
@@ -37187,20 +37191,21 @@ return_1C558:
 
 ; loc_1C55A:
 Tails_LevelBound:
+	clr.b	(Scroll_lock).w
 	move.l	x_pos(a0),d1
 	move.w	x_vel(a0),d0
 	ext.l	d0
 	asl.l	#8,d0
 	add.l	d0,d1
 	swap	d1
-	move.w	(Tails_Min_X_pos).w,d0
+	;move.w	(Tails_Min_X_pos).w,d0
 	addi.w	#$10,d0
-	cmp.w	d1,d0			; has Tails touched the left boundary?
-	bhi.s	Tails_Boundary_Sides	; if yes, branch
-	move.w	(Tails_Max_X_pos).w,d0
-	addi.w	#$128,d0
-	tst.b	(Current_Boss_ID).w
-	bne.s	+
+	;cmp.w	d1,d0			; has Tails touched the left boundary?
+	;bhi.s	Tails_Boundary_Sides	; if yes, branch
+	;move.w	(Tails_Max_X_pos).w,d0
+	;addi.w	#$128,d0
+	;tst.b	(Current_Boss_ID).w
+	;bne.s	+
 	addi.w	#$40,d0
 +
 	cmp.w	d1,d0			; has Tails touched the right boundary?
@@ -37208,14 +37213,15 @@ Tails_LevelBound:
 
 ; loc_1C58C:
 Tails_Boundary_CheckBottom:
-	move.w	(Tails_Max_Y_pos).w,d0
-	addi.w	#$E0,d0
-	cmp.w	y_pos(a0),d0		; has Tails touched the bottom boundary?
-	blt.s	Tails_Boundary_Bottom	; if yes, branch
+	;move.w	(Tails_Max_Y_pos).w,d0
+	;addi.w	#$E0,d0
+	;cmp.w	y_pos(a0),d0		; has Tails touched the bottom boundary?
+	;blt.s	Tails_Boundary_Bottom	; if yes, branch
 	rts
 ; ---------------------------------------------------------------------------
 Tails_Boundary_Bottom: ;;
-	jmpto	(KillCharacter).l, JmpTo2_KillCharacter
+	rts
+	;jmpto	(KillCharacter).l, JmpTo2_KillCharacter
 ; ===========================================================================
 
 ; loc_1C5A0:
@@ -85025,15 +85031,15 @@ Debug_Init:
 	move.w	(Camera_Max_Y_pos).w,(Camera_Max_Y_pos_Debug_Copy).w
 	cmpi.b	#sky_chase_zone,(Current_Zone).w
 	bne.s	+
-	move.w	#0,(Camera_Min_X_pos).w
+	move.w	#-$3FFF,(Camera_Min_X_pos).w
 	move.w	#$3FFF,(Camera_Max_X_pos).w
 +
 	andi.w	#$7FF,(MainCharacter+y_pos).w
 	andi.w	#$7FF,(Camera_Y_pos).w
 	andi.w	#$7FF,(Camera_BG_Y_pos).w
 	clr.b	(Scroll_lock).w
-	move.b	#0,mapping_frame(a0)
-	move.b	#AniIDSonAni_Walk,anim(a0)
+	;move.b	#0,mapping_frame(a0)
+	;move.b	#AniIDSonAni_Walk,anim(a0)
 	; S1 leftover
 	cmpi.b	#GameModeID_SpecialStage,(Game_Mode).w ; special stage mode? (you can't enter debug mode in S2's special stage)
 	bne.s	.islevel	; if not, branch
