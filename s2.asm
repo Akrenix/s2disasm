@@ -4274,6 +4274,10 @@ MusicList2: zoneOrderedTable 1,1
 ; ---------------------------------------------------------------------------
 ; loc_3EC4:
 Level:
+	move.w	#$0,(Camera_Min_X_pos).w
+	move.w	#$FFFF,(Camera_Max_X_pos).w	
+	move.w	#$0,(Camera_Min_Y_pos).w
+	move.w	#$FFFF,(Camera_Max_Y_pos).w		
 	bset	#GameModeFlag_TitleCard,(Game_Mode).w ; add $80 to screen mode (for pre level sequence)
 	tst.w	(Demo_mode_flag).w	; test the old flag for the credits demos (now unused)
 	bmi.s	+
@@ -4687,12 +4691,12 @@ InitPlayers:
 	move.b	#ObjID_Sonic,(MainCharacter+id).w ; load Obj01 Sonic object at $FFFFB000
 	move.b	#ObjID_SpindashDust,(Sonic_Dust+id).w ; load Obj08 Sonic's spindash dust/splash object at $FFFFD100
 
-	cmpi.b	#wing_fortress_zone,(Current_Zone).w
-	beq.s	+ ; skip loading Tails if this is WFZ
-	cmpi.b	#death_egg_zone,(Current_Zone).w
-	beq.s	+ ; skip loading Tails if this is DEZ
-	cmpi.b	#sky_chase_zone,(Current_Zone).w
-	beq.s	+ ; skip loading Tails if this is SCZ
+	;cmpi.b	#wing_fortress_zone,(Current_Zone).w
+	;beq.s	+ ; skip loading Tails if this is WFZ
+	;cmpi.b	#death_egg_zone,(Current_Zone).w
+	;beq.s	+ ; skip loading Tails if this is DEZ
+	;cmpi.b	#sky_chase_zone,(Current_Zone).w
+	;beq.s	+ ; skip loading Tails if this is SCZ
 
 	move.b	#ObjID_Tails,(Sidekick+id).w ; load Obj02 Tails object at $FFFFB040
 	move.w	(MainCharacter+x_pos).w,(Sidekick+x_pos).w
@@ -16107,6 +16111,8 @@ SwScrl_CPZ:
     endm
 	addq.b	#1,d4
 	dbf	d1,-
+	cmpi.w	#chemical_plant_zone_act_1,(Current_ZoneAndAct).w		; is this act 1?
+	bne.w	SwScrl_Water		; if not, proceed to initiate the Labyrinth Zone water ripple effect (this ensures that the effect does not take place in act 1)
 	rts
 ; ===========================================================================
 
@@ -16134,6 +16140,8 @@ loc_D34A:
 
 	addq.b	#1,d4
 	dbf	d1,--
+	cmpi.w	#chemical_plant_zone_act_1,(Current_ZoneAndAct).w		; is this act 1?
+	bne.w	SwScrl_Water		; if not, proceed to initiate the Labyrinth Zone water ripple effect (this ensures that the effect does not take place in act 1)
 	rts
 ; ===========================================================================
 ; loc_D382:
@@ -16292,6 +16300,60 @@ SwScrl_DEZ_RowHeights:
 	dc.b $80	; 34
 	dc.b $80	; 35
 	even
+; ==========================================================================
+;Ripple effect, copy-pasted right off of Sonic Retro lol
+SwScrl_Water:
+	; this adds the LZ water ripple effect to any level
+	lea	(Deform_LZ_Data1).l,a3
+	lea	(Obj0A_WobbleData).l,a2
+
+	move.b	($FFFFF7D8).w,d2
+	move.b	d2,d3
+	addi.w	#$80,($FFFFF7D8).w ; '€'
+
+	;add.w	(Camera_Bg_Y_pos).w,d2
+	;andi.w	#$FF,d2
+
+	add.w	(Camera_Y_pos).w,d3
+	andi.w	#$FF,d3
+
+	lea	(Horiz_Scroll_Buf).w,a1
+	move.w	#$DF,d1	; 'ß'
+	move.w	(Water_Level_1).w,d4
+	move.w	(Camera_Y_pos).w,d5	
+
+	; does the LZ water ripple effect once the camera is below the water
+SwScrl_Water_doRipple:
+	move.b	(a3,d3.w),d4	; FG ripple effect
+	ext.w	d4
+	add.w	d4,(a1)+
+
+	move.b	(a2,d2.w),d4	; BG ripple effect
+	ext.w	d4
+	add.w	d4,(a1)+
+
+	addq.b	#1,d2
+	addq.b	#1,d3
+	dbf	d1,SwScrl_Water_doRipple
+	rts
+
+Deform_LZ_Data1:
+	dc.b   1,  1,  2,  2,  3,  3,  3,  3,  2,  2,  1,  1,  0,  0,  0,  0; 0
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 16
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 32
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 48
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 64
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 80
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 96
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 112
+	dc.b  -1, -1, -2, -2, -3, -3, -3, -3, -2, -2, -1, -1,  0,  0,  0,  0; 128
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 144
+	dc.b   1,  1,  2,  2,  3,  3,  3,  3,  2,  2,  1,  1,  0,  0,  0,  0; 160
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 176
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 192
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 208
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 224
+	dc.b   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0; 240		
 ; ===========================================================================
 ; loc_D4AE:
 SwScrl_ARZ:
@@ -18543,7 +18605,7 @@ LevEvents_EHZ2_Routine1:
 	bne.s	++
 	cmpi.w	#$2780,(Camera_X_pos).w
 	blo.s	+	; rts
-	move.w	(Camera_X_pos).w,(Camera_Min_X_pos).w
+	;move.w	(Camera_X_pos).w,(Camera_Min_X_pos).w
 	move.w	(Camera_X_pos).w,(Tails_Min_X_pos).w
 	move.w	#$390,(Camera_Max_Y_pos).w
 	move.w	#$390,(Tails_Max_Y_pos).w
@@ -18552,7 +18614,7 @@ LevEvents_EHZ2_Routine1:
 	rts
 ; ---------------------------------------------------------------------------
 +
-	move.w	#$2920,(Camera_Max_X_pos).w
+	;move.w	#$2920,(Camera_Max_X_pos).w
 	move.w	#$2920,(Tails_Max_X_pos).w
 	rts
 ; ===========================================================================
@@ -18560,8 +18622,8 @@ LevEvents_EHZ2_Routine1:
 LevEvents_EHZ2_Routine2:
 	cmpi.w	#$28F0,(Camera_X_pos).w
 	blo.s	+	; rts
-	move.w	#$28F0,(Camera_Min_X_pos).w
-	move.w	#$2940,(Camera_Max_X_pos).w
+	move.w	#-$4940,(Camera_Min_X_pos).w
+	move.w	#$4940,(Camera_Max_X_pos).w
 	move.w	#$28F0,(Tails_Min_X_pos).w
 	move.w	#$2940,(Tails_Max_X_pos).w
 	addq.b	#2,(Dynamic_Resize_Routine).w ; => LevEvents_EHZ2_Routine3
@@ -18578,7 +18640,8 @@ LevEvents_EHZ2_Routine2:
 LevEvents_EHZ2_Routine3:
 	cmpi.w	#$388,(Camera_Y_pos).w
 	blo.s	+
-	move.w	#$388,(Camera_Min_Y_pos).w
+	move.w	#$0,(Camera_Min_Y_pos).w
+	move.w	#$4940,(Camera_Max_Y_pos).w	
 	move.w	#$388,(Tails_Min_Y_pos).w
 +
 	addq.b	#1,(ScreenShift).w
@@ -18602,7 +18665,7 @@ LevEvents_EHZ2_Routine3:
 LevEvents_EHZ2_Routine4:
 	tst.b	(Boss_defeated_flag).w
 	beq.s	+
-	move.w	(Camera_X_pos).w,(Camera_Min_X_pos).w
+	;move.w	(Camera_X_pos).w,(Camera_Min_X_pos).w
 	move.w	(Camera_Max_X_pos).w,(Tails_Max_X_pos).w
 	move.w	(Camera_X_pos).w,(Tails_Min_X_pos).w
 +
@@ -34306,8 +34369,7 @@ Sonic_Boundary_CheckBottom:
 	rts
 ; ---------------------------------------------------------------------------
 Sonic_Boundary_Bottom: ;;
-	rts
-	;jmpto	(KillCharacter).l, JmpTo_KillCharacter
+	jmpto	(Sonic_DoLevelCollision).l, JmpTo_KillCharacter
 ; ===========================================================================
 
 ; loc_1A9BA:
@@ -35823,7 +35885,7 @@ return_1B89A:
 ; ===========================================================================
 
 JmpTo_KillCharacter ; JmpTo
-	jmp	(KillCharacter).l
+	jmp	(Sonic_DoLevelCollision).l
 
     if ~~removeJmpTos
 	align 4
@@ -75390,8 +75452,8 @@ ObjB2_Main_SCZ:
 	bsr.w	ObjB2_Move_obbey_player
 	move.b	objoff_2E(a0),d0
 	move.b	status(a0),d1
-	andi.b	#p1_standing,d0	; 'on object' bit
-	andi.b	#p1_standing,d1	; 'on object' bit
+    andi.b  #0,d0
+    andi.b  #0,d1
 	eor.b	d0,d1
 	move.b	d1,objoff_2E(a0)
 	lea	(MainCharacter).w,a1 ; a1=character
